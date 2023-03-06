@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { AuthController } from './AuthController';
+import { AuthController } from '../controllers/AuthController';
 import { Request, Response } from 'express';
 import { check } from 'express-validator';
 import { redirectIsAuthorized } from '../middlewares/redirectIsAuthorized';
-import { Authmiddleware } from '../middlewares/Authmiddleware';
 import { verifyUser } from '../middlewares/verifyUser';
+import { redirectIsNotAuthorized } from '../middlewares/redirectIsNotAuthorized';
 
 const controller = new AuthController();
 const router = Router();
@@ -13,11 +13,14 @@ router.get(
   '/',
   verifyUser,
   redirectIsAuthorized,
-  (req: Request, res: Response) => {
-    //res.cookie('x-session-id', '8bcd0d0f-1ecf-4361-b3f5-d7581b09694a',{secure: true, httpOnly: true} )
+  (_req: Request, res: Response) => {
     res.send('Hello');
   }
 );
+
+router.get('/dashboard', redirectIsNotAuthorized, (_req: Request, res: Response) => {
+  res.send('Dashboard');
+})
 
 router.post(
   '/',

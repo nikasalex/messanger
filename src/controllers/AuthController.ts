@@ -1,18 +1,17 @@
-import { AppDataSource } from '../data_source';
 import { Request, Response } from 'express';
-import { Users } from '../src/entity/users';
+import { Users } from '../entity/users';
 import { validationResult } from 'express-validator';
-import { HashAndVerify } from '../config/hashAndVerify';
-import { Sessions } from '../src/entity/session';
-import { Mail } from '../services/mailgunVerify';
-import { MailRestore } from '../services/mailgunPass';
+import { HashAndVerify } from '../services/hashAndVerify';
+import { Sessions } from '../entity/session';
+import { Mail } from '../services/sendEmail';
 import { mg } from '../data_source';
-import { vTokens } from '../src/entity/verifyTokens';
-import { pTokens } from '../src/entity/passTokens';
-const DOMAIN = 'sandbox2db6b58a1f93439ba874e8f010a1c76c.mailgun.org';
+import { vTokens } from '../entity/verifyTokens';
+import { pTokens } from '../entity/passTokens';
+import { UseRepository } from '../repository/findAndGet';
+const DOMAIN = process.env.MG_DOMAIN;
 
+const repository = new UseRepository();
 const mail = new Mail();
-const mailPass = new MailRestore();
 const hashAndVeridy = new HashAndVerify();
 
 export class AuthController {
@@ -23,9 +22,8 @@ export class AuthController {
         return res.status(400).json({ message: `${errors.errors[0].msg}` });
       }
       const { email, password } = req.body;
-      const user = await AppDataSource.getRepository(Users).findOneBy({
-        email: email,
-      });
+      const user = await repository.findUser(email);
+
       if (!user) {
         return res.status(400).json({ message: 'User not found' });
       }
@@ -38,24 +36,18 @@ export class AuthController {
         return res.status(301).json({ message: 'You are not verified' }); // redirect on verify page
       }
 
-      const checkSession = await AppDataSource.getRepository(
-        Sessions
-      ).findOneBy({
-        user_id: user.user_id,
-      });
+      const checkSession = await repository.findSession(user.user_id);
 
       if (!checkSession) {
-        const sessionRepository = AppDataSource.getRepository(Sessions);
+        const sessionRepository = repository.getRepository(Sessions);
         const session = new Sessions();
         session.user_id = user.user_id;
         await sessionRepository.save(session);
       }
-      const session = await AppDataSource.getRepository(Sessions).findOneBy({
-        user_id: user.user_id,
-      });
+      const session = await repository.findSession(user.user_id);
 
       res.cookie('x-session-id', session.session_id, {
-        secure: true,
+        secure: false, // change when we have front
         httpOnly: true,
         expires: new Date(Date.now() + 10 * 60 * 1000),
       });
@@ -81,10 +73,8 @@ export class AuthController {
         return res.status(400).json({ message: `${errors.errors[0].msg}` });
       }
       const { email, firstName, lastName, password } = req.body;
-      const userRepository = AppDataSource.getRepository(Users);
-      const candidate = await AppDataSource.getRepository(Users).findOneBy({
-        email: email,
-      });
+      const userRepository = repository.getRepository(Users);
+      const candidate = await repository.findUser(email);
       if (candidate) {
         return res
           .status(404)
@@ -99,13 +89,13 @@ export class AuthController {
       user.password = hashPassword;
       await userRepository.save(user); //for test
       const dateExpire = Date.now() + 60 * 1000;
-      const tokensRepository = AppDataSource.getRepository(vTokens);
+      const tokensRepository = repository.getRepository(vTokens);
       const token = new vTokens();
       token.expire = new Date(dateExpire);
       token.user_id = user.user_id;
       await tokensRepository.save(token); //fro test
 
-      const userData = mail.createData(email, {
+      const userData = mail.createDataVerify(email, {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -128,33 +118,28 @@ export class AuthController {
         return res.status(400).json({ message: `${errors.errors[0].msg}` });
       }
       const { email, password, passwordAgain } = req.body;
-      const token = req.query.token
-      console.log(token);
-      
+      const token = req.query.token;
+
       if (!token) {
         return res
           .status(301)
           .json({ message: 'Error, you don`t have a token' }); //Redirect /forgotpass
       }
-      const tokenData = await AppDataSource.getRepository(pTokens).findOneBy({
-        token: token.toString(),
-      });
-      if(!tokenData){
-        return res.status(301).json({message: 'Your link is wrong'}) //REdirect /forgotpass
+      const tokenData = await repository.findPassToken(token.toString());
+      if (!tokenData) {
+        return res.status(301).json({ message: 'Your link is wrong' }); //REdirect /forgotpass
       }
       if (!(tokenData.expire > new Date())) {
-        return res.status(301).json({message: 'Your link is expired'}) //Redirect /forgotpass
+        return res.status(301).json({ message: 'Your link is expired' }); //Redirect /forgotpass
       }
-      const user = await AppDataSource.getRepository(Users).findOneBy({
-        email: email,
-      });
+      const user = await repository.findUser(email);
       if (!user) {
         return res.status(400).json({ message: 'User not found' });
       }
       if (!(password === passwordAgain)) {
         return res.status(400).json({ message: 'Password mismatch' });
       }
-      const userRepository = AppDataSource.getRepository(Users);
+      const userRepository = repository.getRepository(Users);
       const hashPassword = await hashAndVeridy.Hash(password, null);
       user.password = hashPassword;
       await userRepository.save(user);
@@ -168,26 +153,24 @@ export class AuthController {
   async forgotpass(req: Request, res: Response) {
     try {
       const { email } = req.body;
-      const user = await AppDataSource.getRepository(Users).findOneBy({
-        email: email,
-      });
+      const user = await repository.findUser(email);
       if (!user) {
         return res.status(400).json({ message: 'User not found' });
       }
       const dateExpire = Date.now() + 3 * 60 * 1000;
-      const tokensRepository = AppDataSource.getRepository(pTokens);
+      const tokensRepository = repository.getRepository(pTokens);
       const token = new pTokens();
       token.expire = new Date(dateExpire);
       token.user_id = user.user_id;
       await tokensRepository.save(token);
 
-      const userData = mailPass.createData(email, {
+      const userData = mail.createDataRestore(email, {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         token: token.token,
       });
-      const data = mailPass.getData(userData);
+      const data = mail.getData(userData);
       mg.messages.create(DOMAIN, data);
 
       return res.json({ message: 'Link was sent' });
@@ -200,19 +183,17 @@ export class AuthController {
   async verify(req: Request, res: Response) {
     try {
       const { email } = req.body;
-      const user = await AppDataSource.getRepository(Users).findOneBy({
-        email: email,
-      });
+      const user = await repository.findUser(email);
       console.log(user);
 
       if (user) {
         const dateExpire = Date.now() + 60 * 1000;
-        const tokensRepository = AppDataSource.getRepository(vTokens);
+        const tokensRepository = repository.getRepository(vTokens);
         const token = new vTokens();
         token.expire = new Date(dateExpire);
         token.user_id = user.user_id;
         await tokensRepository.save(token);
-        const userData = mail.createData(email, {
+        const userData = mail.createDataVerify(email, {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,

@@ -5,12 +5,9 @@ export function redirectIsAuthorized(
   res: Response,
   next: NextFunction
 ) {
-  //console.log(req.user);
-  
   if (req.user) {
-    console.log('hi mf');
     return res.redirect('/dashboard');
-  }
+  } 
 
   return next();
 }
