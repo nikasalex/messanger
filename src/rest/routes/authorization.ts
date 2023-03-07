@@ -2,9 +2,9 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { Request, Response } from 'express';
 import { check } from 'express-validator';
-import { redirectIsAuthorized } from '../middlewares/redirectIsAuthorized';
-import { verifyUser } from '../middlewares/verifyUser';
-import { redirectIsNotAuthorized } from '../middlewares/redirectIsNotAuthorized';
+import { redirectIsAuthorized } from '../../middlewares/redirectIsAuthorized';
+import { verifyUser } from '../../middlewares/verifyUser';
+import { redirectIsNotAuthorized } from '../../middlewares/redirectIsNotAuthorized';
 
 const controller = new AuthController();
 const router = Router();
@@ -29,14 +29,14 @@ router.post(
 );
 
 router.post(
-  '/forgotpass1',
+  '/passwordreset',
   [
     check(
       'password',
       'Password must be mor than 4 and less than 10 character'
     ).isLength({ min: 4, max: 10 }),
   ],
-  controller.forgotpass1
+  controller.passwordReset
 );
 router.post('/forgotpass', controller.forgotpass);
 

@@ -21,11 +21,11 @@ export class Mail {
     this.mailData[email] = {
       from: `no reply <matveev.nikita96@gmail.com>`,
       to: [`${email}`],
-      subject: 'Hello, restored password',
+      subject: 'Hello, reset password',
       text: ` Hello, ${userData.firstName} ${userData.lastName}, you want to restore your password!
-       Please, click this link: href="http://localhost:3000/forgotpass1?token=${userData.token}">Restore`,
+       Please, click this link: href="http://localhost:3000/passwordreset?token=${userData.token}">Restore`,
       html: ` Hello, ${userData.firstName} ${userData.lastName}, you want to restore your password!<br>
-      Please, click this link: <a href="http://localhost:3000/forgotpass1?token=${userData.token}">Restore</a>`,
+      Please, click this link: <a href="http://localhost:3000/passwordreset?token=${userData.token}">Restore</a>`,
     };
     return email;
   }

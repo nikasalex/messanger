@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 
-export class HashAndVerify {
-  async Hash(string: string, salt: string): Promise<string> {
+
+  async function Hash (string: string, salt: string): Promise<string>    {
     const saltInUse: string = salt || crypto.randomBytes(16).toString('hex');
 
     return new Promise((res, rej) => {
@@ -14,8 +14,9 @@ export class HashAndVerify {
     });
   }
 
-  async Verify(testString: string, hashAndSalt: string) {
+  async function  Verify(testString: string, hashAndSalt: string) {
     const [, salt] = hashAndSalt.split(':');
-    return (await this.Hash(testString, salt)) === hashAndSalt;
+    return (await Hash(testString, salt)) === hashAndSalt;
   }
-}
+
+export  {Verify, Hash}

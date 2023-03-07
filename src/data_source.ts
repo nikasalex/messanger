@@ -2,7 +2,11 @@ import { DataSource } from 'typeorm';
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 
+
 const api = process.env.MG_API;
+
+
+
 
 const mailgun = new Mailgun(formData);
 export const mg = mailgun.client({

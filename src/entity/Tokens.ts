@@ -1,7 +1,7 @@
 import { Column, PrimaryGeneratedColumn, Entity } from "typeorm";
 
 @Entity()
-export class vTokens{  
+export class Tokens{  
     @PrimaryGeneratedColumn('uuid')
     token: string
 
