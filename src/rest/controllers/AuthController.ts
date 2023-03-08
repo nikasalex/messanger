@@ -1,16 +1,12 @@
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import { Hash, Verify } from '../../services/hashAndVerify';
 import { Mail } from '../../services/sendEmail';
 import { mg } from '../../data_source';
-import { v4 } from 'uuid'
-import {
-  userRepository,
-  tokensRepository,
-  
-} from '../../repository';
+import { v4 } from 'uuid';
+import { ZodError } from 'zod';
+import { SchemaLogin, SchemaSignUp, SchemaResetPass } from '../../components';
+import { userRepository, tokensRepository } from '../../repository';
 import { client } from '../../server';
-
 
 const DOMAIN = process.env.MG_DOMAIN;
 
@@ -19,11 +15,8 @@ const mail = new Mail();
 export class AuthController {
   async login(req: Request, res: Response) {
     try {
-      const errors: any = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: `${errors.errors[0].msg}` });
-      }
-      const { email, password } = req.body;
+      const fetchedLogin = SchemaLogin.parse(req.body);
+      const { email, password } = fetchedLogin;
       const user = await userRepository.findByEmail(email);
 
       if (!user) {
@@ -38,8 +31,8 @@ export class AuthController {
         return res.status(301).json({ message: 'You are not verified' }); // redirect on verify page
       }
 
-      const sessionId = v4()
-      await client.set(sessionId, user.id, {'EX': (10 * 60)})
+      const sessionId = v4();
+      await client.set(sessionId, user.id, { EX: 10 * 60 });
 
       res.cookie('x-session-id', sessionId, {
         secure: false, // change when we have front
@@ -56,6 +49,10 @@ export class AuthController {
         },
       });
     } catch (err) {
+      if (err instanceof ZodError) {
+        console.log(err.message);
+        return res.status(404).json({ message: err });
+      }
       console.log('Error', err);
       res.status(400).json({ message: 'Login Error' });
     }
@@ -63,11 +60,8 @@ export class AuthController {
 
   async signup(req: Request, res: Response) {
     try {
-      const errors: any = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: `${errors.errors[0].msg}` });
-      }
-      const { email, firstName, lastName, password } = req.body;
+      const fetchedUser = SchemaSignUp.parse(req.body);
+      const { email, firstName, lastName, password } = fetchedUser;
       const candidate = await userRepository.findByEmail(email);
       if (candidate) {
         return res
@@ -99,6 +93,10 @@ export class AuthController {
 
       return res.json({ message: 'User registered successfully, mail sent' });
     } catch (err) {
+      if (err instanceof ZodError) {
+        console.log(err.message);
+        return res.status(404).json({ message: err });
+      }
       console.log('Error', err);
       return res.status(400).json({ message: 'Error' });
     }
@@ -106,11 +104,8 @@ export class AuthController {
 
   async passwordReset(req: Request, res: Response) {
     try {
-      const errors: any = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: `${errors.errors[0].msg}` });
-      }
-      const { email, password, passwordAgain } = req.body;
+      const fetchedUser = SchemaResetPass.parse(req.body);
+      const { email, password, passwordAgain } = fetchedUser;
       const token = req.query.token;
 
       if (!token) {
@@ -138,6 +133,10 @@ export class AuthController {
       await userRepository.save(user);
       return res.json({ message: 'Password was changed' });
     } catch (err) {
+      if (err instanceof ZodError) {
+        console.log(err.message);
+        return res.status(404).json({ message: err });
+      }
       console.log('Error', err);
       return res.status(400).json({ message: 'Error' });
     }

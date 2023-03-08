@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { Request, Response } from 'express';
-import { check } from 'express-validator';
 import { redirectIsAuthorized } from '../../middlewares/redirectIsAuthorized';
 import { verifyUser } from '../../middlewares/verifyUser';
 import { redirectIsNotAuthorized } from '../../middlewares/redirectIsNotAuthorized';
@@ -18,43 +17,20 @@ router.get(
   }
 );
 
-router.get('/dashboard', redirectIsNotAuthorized, (_req: Request, res: Response) => {
-  res.send('Dashboard');
-})
-
-router.post(
-  '/',
-  [check('email', 'This is must be Email').isEmail()],
-  controller.login
+router.get(
+  '/dashboard',
+  redirectIsNotAuthorized,
+  (_req: Request, res: Response) => {
+    res.send('Dashboard');
+  }
 );
 
-router.post(
-  '/passwordreset',
-  [
-    check(
-      'password',
-      'Password must be mor than 4 and less than 10 character'
-    ).isLength({ min: 4, max: 10 }),
-  ],
-  controller.passwordReset
-);
+router.post('/', controller.login);
+
+router.post('/passwordreset', controller.passwordReset);
 router.post('/forgotpass', controller.forgotpass);
 
-router.post(
-  '/signup',
-  [
-    check('email', 'This is must be Email').isEmail(),
-    check(
-      'password',
-      'Password must be mor than 4 and less than 10 character'
-    ).isLength({ min: 4, max: 10 }),
-  ],
-  controller.signup
-);
-router.post(
-  '/verify',
-  [check('email', 'This is must be Email').isEmail()],
-  controller.verify
-);
+router.post('/signup', controller.signup);
+router.post('/verify', controller.verify);
 
 export = router;
