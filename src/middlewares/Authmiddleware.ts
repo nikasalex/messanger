@@ -15,6 +15,14 @@ export async function Authmiddleware(
       const user = await userRepository.findById(user_id);
       if (user) {
         req.user = user;
+        res.clearCookie('x-session-id')
+        res.cookie('x-session-id', sessionId, {
+          secure: false, // change when we have front
+          httpOnly: true,
+          expires: new Date(Date.now() + 10 * 60 * 1000),
+        });
+        await client.del(sessionId)
+        await client.set(sessionId, user.id, { EX: 10 * 60 });
       }
     }
   }
