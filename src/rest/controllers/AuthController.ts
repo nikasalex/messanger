@@ -105,7 +105,7 @@ export class AuthController {
   async passwordReset(req: Request, res: Response) {
     try {
       const fetchedUser = SchemaResetPass.parse(req.body);
-      const { email, password, passwordAgain } = fetchedUser;
+      const { email, password} = fetchedUser;
       const token = req.query.token;
 
       if (!token) {
@@ -125,9 +125,7 @@ export class AuthController {
       if (!user) {
         return res.status(400).json({ message: 'User not found' });
       }
-      if (!(password === passwordAgain)) {
-        return res.status(400).json({ message: 'Password mismatch' });
-      }
+      
       const hashPassword = await Hash(password, null);
       user.password = hashPassword;
       await userRepository.save(user);

@@ -3,6 +3,7 @@ dotenv.config();
 import express from 'express';
 import { AppDataSource } from './data_source';
 import routerAuth from './rest/routes/authorization';
+import routerMs from './rest/routes/messenger';
 import 'reflect-metadata';
 import { Authmiddleware } from './middlewares/Authmiddleware';
 import cookieParser from 'cookie-parser';
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(Authmiddleware);
 app.use(routerAuth);
+app.use(routerMs);
 
 AppDataSource.initialize()
   .then(() => {

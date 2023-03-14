@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
+import { Dialogues } from "./dialogues";
 
 @Entity()
 export class Users{  
@@ -19,6 +20,9 @@ export class Users{
 
     @Column()
     verify: boolean   
+
+    @ManyToMany(()=>Dialogues, (dialogues)=> dialogues.users)
+    dialogues: Dialogues[]
 }
 
 

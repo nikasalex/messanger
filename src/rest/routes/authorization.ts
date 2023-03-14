@@ -3,12 +3,11 @@ import { AuthController } from '../controllers/AuthController';
 import { Request, Response } from 'express';
 import { redirectIsAuthorized } from '../../middlewares/redirectIsAuthorized';
 import { verifyUser } from '../../middlewares/verifyUser';
-import { redirectIsNotAuthorized } from '../../middlewares/redirectIsNotAuthorized';
 
 const controller = new AuthController();
-const router = Router();
+const routerAuth = Router();
 
-router.get(
+routerAuth.get(
   '/',
   verifyUser,
   redirectIsAuthorized,
@@ -17,20 +16,13 @@ router.get(
   }
 );
 
-router.get(
-  '/dashboard',
-  redirectIsNotAuthorized,
-  (_req: Request, res: Response) => {
-    res.send('Dashboard');
-  }
-);
 
-router.post('/', controller.login);
+routerAuth.post('/', controller.login);
 
-router.post('/passwordreset', controller.passwordReset);
-router.post('/forgotpass', controller.forgotpass);
+routerAuth.post('/passwordreset', controller.passwordReset);
+routerAuth.post('/forgotpass', controller.forgotpass);
 
-router.post('/signup', controller.signup);
-router.post('/verify', controller.verify);
+routerAuth.post('/signup', controller.signup);
+routerAuth.post('/verify', controller.verify);
 
-export = router;
+export = routerAuth;

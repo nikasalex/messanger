@@ -6,7 +6,7 @@ export function redirectIsAuthorized(
   next: NextFunction
 ) {
   if (req.user) {
-    return res.redirect('/dashboard');
+    return res.redirect('/dialogues');
   } 
 
   return next();
