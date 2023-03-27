@@ -8,28 +8,48 @@ import 'reflect-metadata';
 import { Authmiddleware } from './middlewares/Authmiddleware';
 import cookieParser from 'cookie-parser';
 import { createClient } from 'redis';
-
-export const client = createClient()
-
+import cors from 'cors';
+import { Server } from 'socket.io';
+import http from 'http';
 
 const PORT = process.env.PORT ?? 3000;
-
-client.on('error', err=>console.log('Redis client Error',err));
-
 const app = express();
+const server = http.createServer(app);
+export const io = new Server(server,{
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true
+  }
+});
 
+export const client = createClient();
+
+client.on('error', (err) => console.log('Redis client Error', err));
+
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(Authmiddleware);
 app.use(routerAuth);
 app.use(routerMs);
 
+
+io.on('connection', (socket)=>{
+  console.log('A user connected');
+  
+})
+io.on('disconnect',(sosket)=>{
+  console.log('User disconect');
+  
+})
+
+
 AppDataSource.initialize()
   .then(() => {
-    client.connect() //del
+    client.connect();
     console.log('Databse has been initialized');
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server has been stated on ${PORT}`);
     });
   })

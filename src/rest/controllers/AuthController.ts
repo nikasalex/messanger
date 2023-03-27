@@ -20,24 +20,24 @@ export class AuthController {
       const user = await userRepository.findByEmail(email);
 
       if (!user) {
-        return res.status(400).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found' });
       }
       const verify = await Verify(password, user.password);
       if (!verify) {
-        return res.status(400).json({ message: 'Password incorrect' });
+        return res.status(403).json({ message: 'Password incorrect' });
       }
 
       if (!user.verify) {
-        return res.status(301).json({ message: 'You are not verified' }); // redirect on verify page
+        return res.status(301).json({ message: 'You are not verified' }); 
       }
 
       const sessionId = v4();
       await client.set(sessionId, user.id, { EX: 10 * 60 });
 
       res.cookie('x-session-id', sessionId, {
-        secure: false, // change when we have front
+        secure: false, //change
         httpOnly: true,
-        expires: new Date(Date.now() + 10 * 60 * 1000),
+        expires: new Date(Date.now() + 90 * 60 * 1000),
       });
 
       return res.json({
@@ -61,8 +61,9 @@ export class AuthController {
   async signup(req: Request, res: Response) {
     try {
       const fetchedUser = SchemaSignUp.parse(req.body);
-      const { email, firstName, lastName, password } = fetchedUser;
+      const { email, firstName, lastName, password} = fetchedUser;
       const candidate = await userRepository.findByEmail(email);
+      
       if (candidate) {
         return res
           .status(404)
@@ -106,24 +107,23 @@ export class AuthController {
     try {
       const fetchedUser = SchemaResetPass.parse(req.body);
       const { email, password} = fetchedUser;
-      const token = req.query.token;
-
+      const token = req.body.token;
       if (!token) {
         return res
           .status(301)
-          .json({ message: 'Error, you don`t have a token' }); //Redirect /forgotpass
+          .json({ message: 'Error, you don`t have a token' }); 
       }
       const tokenData = await tokensRepository.findByToken(token.toString());
       if (!tokenData) {
-        return res.status(301).json({ message: 'Your link is wrong' }); //REdirect /forgotpass
+        return res.status(301).json({ message: 'Your link is wrong' }); 
       }
+      tokensRepository.checkExpire();
       if (!(tokenData.expire > new Date())) {
-        tokensRepository.checkExpire();
-        return res.status(301).json({ message: 'Your link is expired' }); //Redirect /forgotpass
+        return res.status(301).json({ message: 'Your link is expired' }); 
       }
       const user = await userRepository.findByEmail(email);
       if (!user) {
-        return res.status(400).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found' });
       }
       
       const hashPassword = await Hash(password, null);
@@ -136,7 +136,7 @@ export class AuthController {
         return res.status(404).json({ message: err });
       }
       console.log('Error', err);
-      return res.status(400).json({ message: 'Error' });
+      return res.status(500).json({ message: 'Error' });
     }
   }
 
@@ -145,7 +145,7 @@ export class AuthController {
       const { email } = req.body;
       const user = await userRepository.findByEmail(email);
       if (!user) {
-        return res.status(400).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found' });
       }
       const token = await tokensRepository.save({
         user_id: user.id,
@@ -164,7 +164,7 @@ export class AuthController {
       return res.json({ message: 'Link was sent' });
     } catch (err) {
       console.log('Error', err);
-      return res.status(400).json({ message: 'Error' });
+      return res.status(500).json({ message: 'Error' });
     }
   }
 
@@ -188,10 +188,10 @@ export class AuthController {
 
         return res.json({ message: 'Link for verify was sent ' });
       }
-      res.status(400).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     } catch (err) {
       console.log('Error', err);
-      return res.status(400).json({ message: 'Error' });
+      return res.status(500).json({ message: 'Error' });
     }
   }
 }

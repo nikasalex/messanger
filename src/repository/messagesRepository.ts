@@ -4,15 +4,25 @@ import { Messages } from '../entity/messages';
 
 
 export const messagesRepository = AppDataSource.getRepository(Messages).extend({
-  getMessagesByDialogueID(id: number) {
+   getMessagesByDialogueID(id: number) {
     return this.find({
+      select:{
+        user: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        }
+        
+      },
       relations: {
         dialogue: true,
+        user: true
       },
       where: {
         dialogue: {
           id
         }
+
       },
       order: {
         createAt: "DESC"
@@ -22,13 +32,17 @@ export const messagesRepository = AppDataSource.getRepository(Messages).extend({
     });
   },
   
+  removeMessagesByDialogueID(dialogueId: number){
+    return (
+      this
+      .createQueryBuilder()
+      .delete()
+      .where("dialogueId = :dialogueId", {dialogueId})
+      .execute()
+    )
+  }
+
 });
 
-// export  function newMessage(message:string,dialogue:Dialogues)
-// {
-//   const msg = new Messages();
-//   msg.message = message;
-//   msg.date = new Date(Date.now());
-//   msg.dialogue = dialogue;
-//   return msg
-// }
+
+

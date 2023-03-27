@@ -10,7 +10,7 @@ export class Dialogues{
     @Column()
     name: string
 
-    @OneToMany(()=>Messages, (message)=> message.dialogue, {cascade: true})
+    @OneToMany(()=>Messages, (message)=> message.dialogue)
     messages: Messages[]
 
     @ManyToMany(()=> Users, (users)=> users.dialogues)

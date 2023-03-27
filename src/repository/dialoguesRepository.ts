@@ -23,5 +23,15 @@ export const dialoguesRepository = AppDataSource.getRepository(
     return this.findOneBy({
       id
     })
+  },
+  removeByID(id: number){
+    return (
+      this
+      .createQueryBuilder()
+      .delete()
+      .where("id = :id", {id})
+      .execute()
+    )
   }
+
 });

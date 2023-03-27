@@ -1,5 +1,6 @@
 import { Entity, Column, CreateDateColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Dialogues } from "./dialogues";
+import { Users } from "./users";
 
 @Entity()
 export class Messages{
@@ -13,7 +14,10 @@ message: string
 @CreateDateColumn()
 createAt: Date 
 
-@ManyToOne(()=>Dialogues, (dialogues)=> dialogues.messages)
+@ManyToOne(()=>Dialogues, (dialogue)=> dialogue.messages, {cascade:true})
 dialogue: Dialogues
+
+@ManyToOne(()=>Users, (user)=> user.messages)
+user: Users
 
 }

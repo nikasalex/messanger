@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, OneToMany } from "typeorm";
 import { Dialogues } from "./dialogues";
+import { Messages } from "./messages"; 
 
 @Entity()
 export class Users{  
@@ -20,6 +21,9 @@ export class Users{
 
     @Column()
     verify: boolean   
+
+    @OneToMany(()=>Messages, (message)=> message.user)
+    messages: Messages[]
 
     @ManyToMany(()=>Dialogues, (dialogues)=> dialogues.users)
     dialogues: Dialogues[]
