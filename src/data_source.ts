@@ -1,6 +1,10 @@
 import { DataSource } from 'typeorm';
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
+import path from 'path'
+
+const x = path.join( __dirname, 'entity', '*.{js,ts}' )
+
 
 
 const api = process.env.MG_API;
@@ -23,6 +27,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: ['src/entity/*.ts'],
+  entities: [x],
   synchronize: true,
 });

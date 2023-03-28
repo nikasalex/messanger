@@ -1,16 +1,18 @@
 {
     "compilerOptions": {
-      "lib": ["es5", "es6"],
-      "target": "es5",
+      "lib": ["es6"],
+      "target": "es6",
       "module": "commonjs",
       "moduleResolution": "node",
       "baseUrl": ".",
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true,
-      "typeRoots": ["./node_modules/@types", "./src/types"],
+      "sourceMap": false,
+      "typeRoots": ["/node_modules/@types", "/src/types"],
       "esModuleInterop": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
     },
     "exclude": [
         "/node_modules"
