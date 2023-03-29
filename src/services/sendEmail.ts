@@ -9,7 +9,7 @@ export class Mail {
 
   createDataVerify(email: string, userData: any) {
     this.mailData[email] = {
-      from: `no reply <matveev.nikita96@gmail.com>`,
+      from: `no reply <matveev.nikita@ukr.net>`,
       to: [`${email}`],
       subject: 'Hello, please Verify your account',
       text: ` Hello, ${userData.firstName} ${userData.lastName}, please verify you account!
@@ -22,7 +22,7 @@ export class Mail {
 
   createDataRestore(email: string, userData: any) {
     this.mailData[email] = {
-      from: `no reply <matveev.nikita96@gmail.com>`,
+      from: `no reply <matveev.nikita@ukr.net>`,
       to: [`${email}`],
       subject: 'Hello, reset password',
       text: ` Hello, ${userData.firstName} ${userData.lastName}, you want to restore your password!

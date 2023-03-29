@@ -1,22 +1,24 @@
 import { DataSource } from 'typeorm';
 import formData from 'form-data';
-import Mailgun from 'mailgun.js';
 import path from 'path'
+import nodemailer  from 'nodemailer'
 
 const x = path.join( __dirname, 'entity', '*.{js,ts}' )
 
+export const mg = nodemailer.createTransport({
+  host: process.env.SM_HOST,
+  port: 465,
+  secure: true, 
+  auth: {
+    user: process.env.SM_USER,
+    pass: process.env.SM_PASS,
+  }
+})
 
 
-const api = process.env.MG_API;
 
 
 
-
-const mailgun = new Mailgun(formData);
-export const mg = mailgun.client({
-  username: 'api',
-  key: api,
-});
 
 const DB_TYPE: any = process.env.DB_TYPE || 'mysql';
 

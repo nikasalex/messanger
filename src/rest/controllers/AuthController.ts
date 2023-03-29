@@ -8,8 +8,6 @@ import { SchemaLogin, SchemaSignUp, SchemaResetPass } from '../../components';
 import { userRepository, tokensRepository } from '../../repository';
 import { client } from '../../server';
 
-const DOMAIN = process.env.MG_DOMAIN;
-
 const mail = new Mail();
 
 export class AuthController {
@@ -90,7 +88,7 @@ export class AuthController {
         token: token.token,
       });
       const data = mail.getData(userData);
-      mg.messages.create(DOMAIN, data);
+      await mg.sendMail(data)
 
       return res.json({ message: 'User registered successfully, mail sent' });
     } catch (err) {
@@ -159,7 +157,7 @@ export class AuthController {
         token: token.token,
       });
       const data = mail.getData(userData);
-      mg.messages.create(DOMAIN, data);
+      await mg.sendMail(data)
 
       return res.json({ message: 'Link was sent' });
     } catch (err) {
@@ -184,8 +182,7 @@ export class AuthController {
           token: token.token,
         });
         const data = mail.getData(userData);
-        mg.messages.create(DOMAIN, data);
-
+        await mg.sendMail(data)
         return res.json({ message: 'Link for verify was sent ' });
       }
       return res.status(404).json({ message: 'User not found' });
