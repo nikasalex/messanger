@@ -12,12 +12,13 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 import http from 'http';
 
+const DOMAIN = process.env.B_DOMAIN
 const PORT = process.env.PORT ?? 3000;
 const app = express();
 const server = http.createServer(app);
 export const io = new Server(server,{
   cors: {
-    origin: 'http://localhost:3000',
+    origin: `http://${DOMAIN}:3000`,
     credentials: true
   }
 });
@@ -26,7 +27,7 @@ export const client = createClient();
 
 client.on('error', (err) => console.log('Redis client Error', err));
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cors({ credentials: true, origin: `http://${DOMAIN}:3000` }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

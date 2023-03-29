@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { verifyUser } from '../../middlewares/VerifyUser';
 import { logOut } from '../../middlewares/LogOutUser';
 
-
+const DOMAIN = process.env.B_DOMAIN
 
 const controller = new AuthController();
 const routerAuth = Router();
@@ -12,7 +12,7 @@ const routerAuth = Router();
 routerAuth.get(
   '/',
   verifyUser,(_req:Request, res:Response)=>{
-    res.redirect('http://localhost:3000/')
+    res.redirect(`http://${DOMAIN}:3000/`)
   }
 );
 
