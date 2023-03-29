@@ -5,14 +5,14 @@ import { verifyUser } from '../../middlewares/verifyUser';
 import { logOut } from '../../middlewares/LogOutUser';
 
 const DOMAIN = process.env.B_DOMAIN
-
+const FPORT = process.env.FPORT
 const controller = new AuthController();
 const routerAuth = Router();
 
 routerAuth.get(
   '/',
   verifyUser,(_req:Request, res:Response)=>{
-    res.redirect(`http://${DOMAIN}:3000/`)
+    res.redirect(`http://${DOMAIN}:${FPORT}/`)
   }
 );
 
