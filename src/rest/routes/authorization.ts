@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { Request, Response } from 'express';
-import { verifyUser } from '../../middlewares/VerifyUser';
+import { verifyUser } from '../../middlewares/verifyUser';
 import { logOut } from '../../middlewares/LogOutUser';
 
 const DOMAIN = process.env.B_DOMAIN
